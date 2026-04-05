@@ -1,0 +1,7 @@
+Member ID: MBR005
+Visit Date: 2024-11-10
+Provider NPI: 3456789012
+Diagnosis Codes: E11.9, E11.65, Z79.4
+Medications: Metformin 1000mg twice daily, Glipizide 5mg daily, Lisinopril 10mg daily
+Lab Results: HbA1c: 7.2 on 2024-05-15, Creatinine: 1.1, eGFR: 72
+Notes: Diabetes management visit. Patient reports good medication compliance. Blood pressure controlled. Discussed importance of regular lab monitoring. HbA1c from 6 months ago shows adequate control but needs updated testing.

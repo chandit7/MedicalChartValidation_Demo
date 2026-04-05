@@ -1,0 +1,7 @@
+Member ID: MBR004
+Visit Date: 2024-10-15
+Provider NPI: 2345678901
+Diagnosis Codes: Z23, Z79.4
+Medications: Atorvastatin 20mg daily, Aspirin 81mg daily
+Lab Results: HbA1c: 5.8 on 2024-10-15, Cholesterol: 165, BP: 120/78
+Notes: Preventive immunization administered. Flu vaccine and Tdap booster given. Patient tolerating medications well. No adverse reactions reported.

@@ -1,0 +1,7 @@
+Member ID: MBR002
+Visit Date: 2024-11-20
+Provider NPI: 9876543210
+Diagnosis Codes: E11.9, Z79.4
+Medications: Metformin 500mg twice daily
+Lab Results: HbA1c: 7.9 on 2024-11-20
+Notes: Diabetes management follow-up. No screening performed.

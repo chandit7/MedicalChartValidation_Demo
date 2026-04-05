@@ -1,0 +1,7 @@
+Member ID: MBR003
+Visit Date: 2024-12-01
+Provider NPI: 5551234567
+Diagnosis Codes: E11.9, Z13.1
+Medications: Metformin 1000mg daily, Jardiance 10mg
+Lab Results: HbA1c: 8.2 on 2023-03-10
+Notes: Diabetes monitoring visit.

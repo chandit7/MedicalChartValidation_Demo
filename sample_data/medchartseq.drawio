@@ -1,0 +1,190 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="QUxiZvzmAgWYZqUpWqSM">
+    <mxGraphModel dx="897" dy="367" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="b6yDDtViENJNDgKDlTsa-1" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="User" vertex="1">
+          <mxGeometry height="1851" width="150" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-2" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Streamlit UI" vertex="1">
+          <mxGeometry height="1851" width="150" x="284" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-3" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Extract Agent" vertex="1">
+          <mxGeometry height="1851" width="150" x="506" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-4" parent="b6yDDtViENJNDgKDlTsa-3" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="" vertex="1">
+          <mxGeometry height="249" width="10" x="70" y="211" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-5" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Gap Match Agent" vertex="1">
+          <mxGeometry height="1851" width="150" x="706" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-6" parent="b6yDDtViENJNDgKDlTsa-5" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="" vertex="1">
+          <mxGeometry height="289" width="10" x="70" y="502" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-7" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Discrepancy Agent" vertex="1">
+          <mxGeometry height="1851" width="152" x="906" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-8" parent="b6yDDtViENJNDgKDlTsa-7" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="" vertex="1">
+          <mxGeometry height="228" width="10" x="71" y="833" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-9" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Decision Agent" vertex="1">
+          <mxGeometry height="1851" width="150" x="1108" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-10" parent="b6yDDtViENJNDgKDlTsa-9" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="" vertex="1">
+          <mxGeometry height="497" width="10" x="70" y="1103" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-11" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Database" vertex="1">
+          <mxGeometry height="1851" width="150" x="1308" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-12" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-1" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-2" value="Upload Chart + Gap Report">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="236" y="127" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-13" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-1" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-2" value="Click &quot;Run Validation&quot;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="236" y="179" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-14" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-2" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-4" value="Send chart text">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="479" y="231" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-15" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-4" style="curved=1;endArrow=block;rounded=0;" target="b6yDDtViENJNDgKDlTsa-4" value="Extract using regex:&#xa;- Member ID&#xa;- Visit Date&#xa;- Provider NPI&#xa;- ICD Codes&#xa;- HbA1c">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="636" y="388" />
+              <mxPoint x="636" y="418" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-16" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-4" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-2" value="Return extracted data">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="480" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-17" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-2" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-6" value="Send extracted data + gap row">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="579" y="522" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-18" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-6" style="curved=1;endArrow=block;rounded=0;" target="b6yDDtViENJNDgKDlTsa-6" value="Calculate scores:&#xa;- ICD match (50%)&#xa;- Date in window (40%)&#xa;- NPI present (10%)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="836" y="637" />
+              <mxPoint x="836" y="667" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-19" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-6" style="curved=1;endArrow=block;rounded=0;" target="b6yDDtViENJNDgKDlTsa-6" value="Composite = Σ(score × weight)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="836" y="719" />
+              <mxPoint x="836" y="749" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-20" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-6" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-2" value="Return gap score">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="801" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-21" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-2" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-8" value="Send extracted data">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="679" y="853" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-22" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-8" style="curved=1;endArrow=block;rounded=0;" target="b6yDDtViENJNDgKDlTsa-8" value="Check for:&#xa;- Invalid HbA1c&#xa;- Date gaps&#xa;- Unknown codes&#xa;- Missing fields">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1037" y="989" />
+              <mxPoint x="1037" y="1019" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-23" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-8" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-2" value="Return flags list">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="680" y="1071" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-24" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-2" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-10" value="Send gap score + flags + data">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="1123" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-25" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-10" style="curved=1;endArrow=block;rounded=0;" target="b6yDDtViENJNDgKDlTsa-10" value="Apply penalties:&#xa;- High: -0.20&#xa;- Medium: -0.10&#xa;- Low: -0.03">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1238" y="1238" />
+              <mxPoint x="1238" y="1268" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-26" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-10" style="curved=1;endArrow=block;rounded=0;" target="b6yDDtViENJNDgKDlTsa-10" value="Check hard rules:&#xa;1. Missing Member ID?&#xa;2. High severity flags?&#xa;3. No ICD match?">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1238" y="1383" />
+              <mxPoint x="1238" y="1413" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-27" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-10" style="curved=1;endArrow=block;rounded=0;" target="b6yDDtViENJNDgKDlTsa-10" value="Apply thresholds:&#xa;≥0.85 → Approved&#xa;≤0.40 → Rejected&#xa;Else → Manual Review">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1238" y="1528" />
+              <mxPoint x="1238" y="1558" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-28" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-10" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-2" value="Return decision">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="781" y="1610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-29" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-2" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-11" value="Save result">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="1662" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-30" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-11" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-2" value="Confirm saved">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="883" y="1714" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b6yDDtViENJNDgKDlTsa-31" edge="1" parent="1" source="b6yDDtViENJNDgKDlTsa-2" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" target="b6yDDtViENJNDgKDlTsa-1" value="Display decision">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="239" y="1766" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

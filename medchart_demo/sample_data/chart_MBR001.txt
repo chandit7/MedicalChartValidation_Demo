@@ -1,0 +1,7 @@
+Member ID: MBR001
+Visit Date: 2024-09-15
+Provider NPI: 1234567890
+Diagnosis Codes: Z00.00, Z23
+Medications: Lisinopril 10mg daily
+Lab Results: HbA1c: 6.8 on 2024-09-15, BP: 118/76
+Notes: Annual wellness completed. Preventive care up to date.
