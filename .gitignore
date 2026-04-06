@@ -39,10 +39,9 @@ venv.bak/
 .DS_Store
 
 # Jupyter Notebook
-.ipynb_checkpoints/
-*.ipynb
+.ipynb_checkpoints
 
-# Environment Variables
+# Environment variables
 .env
 .env.local
 .env.*.local
