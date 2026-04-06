@@ -210,25 +210,37 @@ def comparative_analysis(dimension, results_df, llm_client):
 
 ### Phase 1: Foundation (2-3 hours)
 
-**1. Create LLM Service Module**
+**1. Create LLM Service Module (Using Groq Free Tier)**
 ```python
 # llm_service.py
 import os
-from openai import OpenAI  # or anthropic, etc.
+from groq import Groq
 
 class LLMAnalytics:
-    def __init__(self, api_key=None, model="gpt-4"):
-        self.client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+    def __init__(self, api_key=None, model="llama-3.1-70b-versatile"):
+        """
+        Initialize Groq LLM client with free tier.
+        
+        Available free models:
+        - llama-3.1-70b-versatile (recommended for analytics)
+        - llama-3.1-8b-instant (faster, lighter tasks)
+        - mixtral-8x7b-32768 (alternative)
+        """
+        self.client = Groq(api_key=api_key or os.getenv("GROQ_API_KEY"))
         self.model = model
     
     def generate(self, prompt, max_tokens=500):
-        """Generate LLM response."""
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_tokens
-        )
-        return response.choices[0].message.content
+        """Generate LLM response using Groq."""
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=max_tokens,
+                temperature=0.7
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            return f"Error generating response: {str(e)}"
     
     def analyze_trends(self, results_df):
         """Analyze validation trends."""
@@ -295,9 +307,9 @@ with tab4:
     
     # API Key input
     api_key = st.text_input(
-        "OpenAI API Key (optional)", 
+        "Groq API Key (Free Tier)",
         type="password",
-        help="Enter your API key to enable AI insights"
+        help="Get your free API key at https://console.groq.com"
     )
     
     if not api_key:
@@ -380,8 +392,13 @@ if 'llm_service' in st.session_state:
 
 Add to `requirements.txt`:
 ```txt
-openai>=1.0.0  # or anthropic>=0.18.0
+groq>=0.4.0  # Free tier with Llama 3.1 models
 ```
+
+**Setup Instructions:**
+1. Install: `pip install groq`
+2. Get free API key: https://console.groq.com
+3. Set environment variable (optional): `export GROQ_API_KEY=your_key_here`
 
 ---
 
@@ -389,36 +406,43 @@ openai>=1.0.0  # or anthropic>=0.18.0
 
 ### 1. **API Key Management**
 - Never store API keys in code
-- Use environment variables or secure input
-- Option to use local LLM (Ollama, LM Studio)
+- Use environment variables or secure input in Streamlit
+- Groq API key is free but should still be protected
+- Option to use local LLM (Ollama, LM Studio) for zero external calls
 
 ### 2. **Data Privacy**
+- ⚠️ **Important:** Groq is a cloud service - data is sent to external servers
 - Anonymize member IDs before sending to LLM
-- Option to use on-premise LLM
-- Clear disclosure that data leaves system
+- Remove PHI (Protected Health Information) from prompts
+- For maximum privacy, use Ollama (local) instead
+- Clear disclosure that data leaves system when using Groq
 
 ### 3. **Rate Limiting**
-- Cache LLM responses
-- Implement request throttling
-- Show cost estimates
+- Groq free tier: 6000 requests/minute (very generous)
+- Cache LLM responses to reduce redundant calls
+- Implement request throttling for safety
+- Monitor usage via Groq console
 
 ---
 
 ## 💰 Cost Estimation
 
-**Using GPT-4:**
-- Trend analysis: ~$0.03 per request
-- Decision explanation: ~$0.01 per chart
-- Natural language query: ~$0.02 per question
+**Using Groq Free Tier (Recommended):**
+- ✅ **$0/month** - Completely FREE
+- Trend analysis: FREE
+- Decision explanation: FREE per chart
+- Natural language query: FREE per question
+- Rate limits: Generous free tier (6000 requests/minute for Llama 3.1)
 
-**Monthly estimate (100 charts/day):**
-- ~$90-150/month with caching
-- Can use GPT-3.5 for 10x cost reduction
+**Groq Free Tier Models:**
+- `llama-3.1-70b-versatile` - Best for complex analytics (recommended)
+- `llama-3.1-8b-instant` - Faster for simple tasks
+- `mixtral-8x7b-32768` - Alternative with large context
 
-**Free alternatives:**
-- Ollama (local)
-- LM Studio (local)
-- Open-source models (Llama, Mistral)
+**Other Free Alternatives:**
+- Ollama (local, 100% private)
+- LM Studio (local, GUI-based)
+- Hugging Face Inference API (free tier)
 
 ---
 
