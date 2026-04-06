@@ -3,9 +3,13 @@ import pandas as pd
 import pdfplumber
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 import db
 import agents
-from llm_service import GeminiAnalytics
+from llm_service import LLMAnalytics
+
+# Load environment variables
+load_dotenv()
 
 # Initialize database on startup
 db.init_db()
@@ -342,21 +346,14 @@ with tab3:
     # Add AI-powered alerts section
     if 'llm_service' in st.session_state:
         st.subheader("🚨 AI-Detected Alerts")
-        st.caption("Automated anomaly detection powered by Gemini")
+        st.caption("Automated anomaly detection powered by Groq (Llama 3.1)")
         
         if st.button("🔄 Refresh Alerts"):
             with st.spinner("Analyzing for anomalies..."):
                 current = db.get_daily_summary()
                 historical = db.get_30day_average()
-                alerts = st.session_state.llm_service.generate_alerts(current, historical)
-                
-                for alert in alerts:
-                    if alert['severity'] == 'high':
-                        st.error(f"🔴 {alert['message']}")
-                    elif alert['severity'] == 'medium':
-                        st.warning(f"🟡 {alert['message']}")
-                    else:
-                        st.info(f"🟢 {alert['message']}")
+                alerts_text = st.session_state.llm_service.generate_alerts(current, historical)
+                st.markdown(alerts_text)
         
         st.divider()
     
@@ -389,23 +386,26 @@ with tab3:
 # ============================================================================
 with tab4:
     st.header("🤖 AI-Powered Analytics")
-    st.caption("⚡ Powered by Gemini 1.5 Pro — Optional enhancement layer that does NOT affect validation decisions")
+    st.caption("Powered by Groq's free tier (Llama 3.3) - Does not affect validation decisions")
     
     # Initialize LLM service from environment variable
     try:
         if 'llm_service' not in st.session_state:
-            st.session_state.llm_service = GeminiAnalytics()
-            st.success("✅ Gemini 1.5 Pro connected successfully!")
-    except ValueError as e:
-        st.error(f"❌ {str(e)}")
+            st.session_state.llm_service = LLMAnalytics()
+        llm = st.session_state.llm_service
+        st.success("✅ Connected to Groq (Llama 3.3 70B)")
+    except Exception as e:
+        st.error(f"❌ Failed to connect to Groq: {str(e)}")
         st.info("""
-        ### 🔑 How to Set Up API Key:
+        ### 🔑 How to Set Up Groq API Key:
         
-        1. **Get your API key** from [Google AI Studio](https://makersuite.google.com/app/apikey)
+        1. **Get your FREE API key** from [Groq Console](https://console.groq.com)
+           - No credit card required
+           - 6000 requests/minute free tier
         
         2. **Create a `.env` file** in the `medchart_demo` directory:
         ```
-        GEMINI_API_KEY=your_api_key_here
+        GROQ_API_KEY=gsk_your_api_key_here
         ```
         
         3. **Restart the application** to load the environment variable
@@ -414,93 +414,146 @@ with tab4:
         - **📈 Trend Analysis**: Identify patterns in validation history
         - **💬 Natural Language Queries**: Ask questions in plain English
         - **🔍 Root Cause Analysis**: Understand why cases are rejected/flagged
-        - **📝 Decision Explanations**: Human-friendly explanations of algorithmic decisions
         - **🚨 Automated Alerts**: Proactive notifications about anomalies
         
-        ### 🔒 Privacy & Security:
-        - API key stored securely in .env file (never committed to git)
-        - All data stays in your local database
-        - LLM responses are cached for 24 hours
-        - Analytics are advisory only — never affect validation decisions
+        ### 🎁 Why Groq?
+        - ✅ **100% FREE** - No credit card required
+        - ✅ **Fast** - 10x faster than typical APIs
+        - ✅ **Generous limits** - 6000 requests/minute
+        - ✅ **Llama 3.3 70B** - Latest state-of-the-art model
         """)
         st.stop()
-    except Exception as e:
-        st.error(f"❌ Failed to initialize Gemini: {str(e)}")
-        st.info("Please check your API key and internet connection.")
-        st.stop()
     
-    llm = st.session_state.llm_service
+    # Create sub-tabs for AI features
+    ai_tab1, ai_tab2, ai_tab3 = st.tabs(["💬 Ask Questions", "📈 Trend Analysis", "🔍 Root Cause"])
     
-    # Create sections
-    st.divider()
-    
-    # Section 1: Trend Analysis
-    st.subheader("📈 Trend Analysis")
-    st.caption("Analyze patterns in validation history")
-    
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        days = st.slider("Analysis period (days)", 7, 90, 30)
-    with col2:
-        if st.button("🔍 Analyze Trends", use_container_width=True):
-            with st.spinner("Analyzing validation patterns..."):
-                results_df = db.get_results_for_analysis(days=days)
-                if len(results_df) == 0:
-                    st.warning(f"No data available for the last {days} days")
+    # Sub-tab 1: Ask Questions
+    with ai_tab1:
+        st.subheader("💬 Natural Language Queries")
+        st.caption("Ask questions about your validation data in plain English")
+        
+        question = st.text_input(
+            "Your question:",
+            placeholder="e.g., What's the rejection rate this week? Which member has the most manual reviews?",
+            key="nl_query"
+        )
+        
+        if question:
+            with st.spinner("🤔 Thinking..."):
+                results_df = db.get_all_results()
+                if len(results_df) > 0:
+                    results_df = pd.DataFrame(results_df)
+                    answer = llm.natural_language_query(question, results_df)
+                    st.info(answer)
                 else:
+                    st.warning("⚠️ No validation data available yet. Run some validations first!")
+        
+        # Show example questions
+        with st.expander("💡 Example Questions"):
+            st.markdown("""
+            - What's the approval rate this month?
+            - Which members have the most flags?
+            - How many charts were manually reviewed today?
+            - What's the average confidence score?
+            - Show me the rejection trend over time
+            - Which gap types are most common?
+            """)
+    
+    # Sub-tab 2: Trend Analysis
+    with ai_tab2:
+        st.subheader("📈 Trend Analysis with Charts")
+        st.caption("Analyze patterns in validation history with AI insights")
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            days = st.slider("Analysis period (days)", 7, 90, 30, key="trend_days")
+        with col2:
+            analyze_btn = st.button("🔍 Analyze", use_container_width=True, type="primary")
+        
+        if analyze_btn:
+            with st.spinner("📊 Analyzing validation patterns..."):
+                results_df = db.get_results_for_analysis(days=days)
+                
+                if len(results_df) > 0:
+                    # Show charts first
+                    st.subheader("📊 Visual Trends")
+                    
+                    # Decision distribution over time
+                    df_chart = results_df.copy()
+                    df_chart['date'] = pd.to_datetime(df_chart['created_at']).dt.date
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("**Decision Distribution**")
+                        decision_counts = df_chart['decision'].value_counts()
+                        st.bar_chart(decision_counts)
+                    
+                    with col2:
+                        st.markdown("**Confidence Score Distribution**")
+                        st.line_chart(df_chart.set_index('date')['confidence'])
+                    
+                    st.divider()
+                    
+                    # AI Insights
+                    st.subheader("🤖 AI Insights")
                     insights = llm.analyze_trends(results_df)
                     st.markdown(insights)
+                else:
+                    st.warning(f"⚠️ No data available for the last {days} days")
     
-    st.divider()
-    
-    # Section 2: Natural Language Query
-    st.subheader("💬 Ask Questions")
-    st.caption("Query your validation data in plain English")
-    
-    question = st.text_input(
-        "Your question:",
-        placeholder="e.g., Which members have the most manual reviews?"
-    )
-    
-    if question:
-        with st.spinner("Thinking..."):
-            results_df = db.get_all_results()
-            if len(results_df) == 0:
-                st.warning("No validation data available yet")
-            else:
-                results_df = pd.DataFrame(results_df)
-                answer = llm.natural_language_query(question, results_df)
-                st.markdown(answer)
-    
-    st.divider()
-    
-    # Section 3: Root Cause Analysis
-    st.subheader("🔍 Root Cause Analysis")
-    st.caption("Understand why certain patterns occur")
-    
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        analysis_type = st.selectbox(
-            "Analyze:",
-            ["Rejected Cases", "Manual Review Cases", "High Flag Count Cases"]
-        )
-    with col2:
-        if st.button("🔬 Analyze", use_container_width=True):
-            with st.spinner("Identifying patterns..."):
+    # Sub-tab 3: Root Cause Analysis
+    with ai_tab3:
+        st.subheader("🔍 Root Cause Analysis")
+        st.caption("Understand why certain patterns occur in your validation data")
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            analysis_type = st.selectbox(
+                "Select case type to analyze:",
+                ["Rejected Cases", "Manual Review Cases", "All Flagged Cases"],
+                key="root_cause_type"
+            )
+        with col2:
+            analyze_root_btn = st.button("🔬 Analyze", use_container_width=True, type="primary")
+        
+        if analyze_root_btn:
+            with st.spinner("🔎 Identifying patterns..."):
                 all_results = db.get_all_results()
                 
-                # Filter based on analysis type
-                if analysis_type == "Rejected Cases":
-                    filtered = [r for r in all_results if r['decision'] == 'rejected']
-                elif analysis_type == "Manual Review Cases":
-                    filtered = [r for r in all_results if r['decision'] == 'manual_review']
-                else:  # High Flag Count
-                    filtered = [r for r in all_results if r['disc_count'] >= 2]
-                
-                if len(filtered) == 0:
-                    st.warning(f"No {analysis_type.lower()} found in database")
+                if len(all_results) > 0:
+                    all_results_df = pd.DataFrame(all_results)
+                    
+                    # Filter based on selection
+                    if analysis_type == "Rejected Cases":
+                        filtered = all_results_df[all_results_df['decision'] == 'rejected']
+                        filter_desc = "rejected cases"
+                    elif analysis_type == "Manual Review Cases":
+                        filtered = all_results_df[all_results_df['decision'] == 'manual_review']
+                        filter_desc = "manual review cases"
+                    else:
+                        filtered = all_results_df[all_results_df['flags'].notna()]
+                        filter_desc = "flagged cases"
+                    
+                    if len(filtered) > 0:
+                        # Show summary stats
+                        st.metric("Cases Found", len(filtered))
+                        
+                        # Show flag distribution if available
+                        if 'flags' in filtered.columns:
+                            st.markdown("**Most Common Flags:**")
+                            flag_counts = filtered['flags'].value_counts().head(5)
+                            st.bar_chart(flag_counts)
+                        
+                        st.divider()
+                        
+                        # AI Analysis
+                        st.subheader("🤖 AI Root Cause Analysis")
+                        analysis = llm.root_cause_analysis(filtered)
+                        st.markdown(analysis)
+                    else:
+                        st.warning(f"⚠️ No {filter_desc} found in the database")
                 else:
-                    analysis = llm.root_cause_analysis(filtered, analysis_type)
-                    st.markdown(analysis)
+                    st.warning("⚠️ No validation data available yet. Run some validations first!")
 
 # Made with Bob
