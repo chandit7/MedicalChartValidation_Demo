@@ -2,8 +2,10 @@ import streamlit as st
 import pandas as pd
 import pdfplumber
 from pathlib import Path
+import os
 import db
 import agents
+from llm_service import GeminiAnalytics
 
 # Initialize database on startup
 db.init_db()
@@ -19,7 +21,7 @@ st.title("🏥 Medical Chart Validation System")
 st.caption("Zero-LLM algorithmic decision engine for care gap closure")
 
 # Create tabs
-tab1, tab2, tab3 = st.tabs(["📋 Validate", "📊 Results", "📈 Dashboard"])
+tab1, tab2, tab3, tab4 = st.tabs(["📋 Validate", "📊 Results", "📈 Dashboard", "🤖 AI Insights"])
 
 # ============================================================================
 # TAB 1: VALIDATE
@@ -282,6 +284,15 @@ with tab2:
                 if result['flags']:
                     st.subheader("Flags")
                     st.warning(result['flags'])
+                
+                # Add AI explanation button
+                if 'llm_service' in st.session_state:
+                    if st.button(f"🤖 AI Explanation", key=f"explain_{result['id']}"):
+                        with st.spinner("Generating explanation..."):
+                            explanation = st.session_state.llm_service.explain_decision(result)
+                            st.info(explanation)
+                else:
+                    st.caption("💡 Enable AI Insights in Tab 4 to get detailed explanations")
 
 # ============================================================================
 # TAB 3: DASHBOARD
@@ -328,6 +339,27 @@ with tab3:
     
     st.divider()
     
+    # Add AI-powered alerts section
+    if 'llm_service' in st.session_state:
+        st.subheader("🚨 AI-Detected Alerts")
+        st.caption("Automated anomaly detection powered by Gemini")
+        
+        if st.button("🔄 Refresh Alerts"):
+            with st.spinner("Analyzing for anomalies..."):
+                current = db.get_daily_summary()
+                historical = db.get_30day_average()
+                alerts = st.session_state.llm_service.generate_alerts(current, historical)
+                
+                for alert in alerts:
+                    if alert['severity'] == 'high':
+                        st.error(f"🔴 {alert['message']}")
+                    elif alert['severity'] == 'medium':
+                        st.warning(f"🟡 {alert['message']}")
+                    else:
+                        st.info(f"🟢 {alert['message']}")
+        
+        st.divider()
+    
     # Get all results for charting
     results = db.get_all_results()
     
@@ -351,5 +383,124 @@ with tab3:
     
     st.divider()
     st.caption("💡 All decisions are algorithmic — zero LLM used for routing.")
+
+# ============================================================================
+# TAB 4: AI INSIGHTS
+# ============================================================================
+with tab4:
+    st.header("🤖 AI-Powered Analytics")
+    st.caption("⚡ Powered by Gemini 1.5 Pro — Optional enhancement layer that does NOT affect validation decisions")
+    
+    # Initialize LLM service from environment variable
+    try:
+        if 'llm_service' not in st.session_state:
+            st.session_state.llm_service = GeminiAnalytics()
+            st.success("✅ Gemini 1.5 Pro connected successfully!")
+    except ValueError as e:
+        st.error(f"❌ {str(e)}")
+        st.info("""
+        ### 🔑 How to Set Up API Key:
+        
+        1. **Get your API key** from [Google AI Studio](https://makersuite.google.com/app/apikey)
+        
+        2. **Create a `.env` file** in the `medchart_demo` directory:
+        ```
+        GEMINI_API_KEY=your_api_key_here
+        ```
+        
+        3. **Restart the application** to load the environment variable
+        
+        ### 🎯 What You'll Get Once Configured:
+        - **📈 Trend Analysis**: Identify patterns in validation history
+        - **💬 Natural Language Queries**: Ask questions in plain English
+        - **🔍 Root Cause Analysis**: Understand why cases are rejected/flagged
+        - **📝 Decision Explanations**: Human-friendly explanations of algorithmic decisions
+        - **🚨 Automated Alerts**: Proactive notifications about anomalies
+        
+        ### 🔒 Privacy & Security:
+        - API key stored securely in .env file (never committed to git)
+        - All data stays in your local database
+        - LLM responses are cached for 24 hours
+        - Analytics are advisory only — never affect validation decisions
+        """)
+        st.stop()
+    except Exception as e:
+        st.error(f"❌ Failed to initialize Gemini: {str(e)}")
+        st.info("Please check your API key and internet connection.")
+        st.stop()
+    
+    llm = st.session_state.llm_service
+    
+    # Create sections
+    st.divider()
+    
+    # Section 1: Trend Analysis
+    st.subheader("📈 Trend Analysis")
+    st.caption("Analyze patterns in validation history")
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        days = st.slider("Analysis period (days)", 7, 90, 30)
+    with col2:
+        if st.button("🔍 Analyze Trends", use_container_width=True):
+            with st.spinner("Analyzing validation patterns..."):
+                results_df = db.get_results_for_analysis(days=days)
+                if len(results_df) == 0:
+                    st.warning(f"No data available for the last {days} days")
+                else:
+                    insights = llm.analyze_trends(results_df)
+                    st.markdown(insights)
+    
+    st.divider()
+    
+    # Section 2: Natural Language Query
+    st.subheader("💬 Ask Questions")
+    st.caption("Query your validation data in plain English")
+    
+    question = st.text_input(
+        "Your question:",
+        placeholder="e.g., Which members have the most manual reviews?"
+    )
+    
+    if question:
+        with st.spinner("Thinking..."):
+            results_df = db.get_all_results()
+            if len(results_df) == 0:
+                st.warning("No validation data available yet")
+            else:
+                results_df = pd.DataFrame(results_df)
+                answer = llm.natural_language_query(question, results_df)
+                st.markdown(answer)
+    
+    st.divider()
+    
+    # Section 3: Root Cause Analysis
+    st.subheader("🔍 Root Cause Analysis")
+    st.caption("Understand why certain patterns occur")
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        analysis_type = st.selectbox(
+            "Analyze:",
+            ["Rejected Cases", "Manual Review Cases", "High Flag Count Cases"]
+        )
+    with col2:
+        if st.button("🔬 Analyze", use_container_width=True):
+            with st.spinner("Identifying patterns..."):
+                all_results = db.get_all_results()
+                
+                # Filter based on analysis type
+                if analysis_type == "Rejected Cases":
+                    filtered = [r for r in all_results if r['decision'] == 'rejected']
+                elif analysis_type == "Manual Review Cases":
+                    filtered = [r for r in all_results if r['decision'] == 'manual_review']
+                else:  # High Flag Count
+                    filtered = [r for r in all_results if r['disc_count'] >= 2]
+                
+                if len(filtered) == 0:
+                    st.warning(f"No {analysis_type.lower()} found in database")
+                else:
+                    analysis = llm.root_cause_analysis(filtered, analysis_type)
+                    st.markdown(analysis)
 
 # Made with Bob
