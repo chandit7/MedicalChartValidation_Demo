@@ -1,0 +1,8 @@
+# Activate venv
+.\venv\Scripts\Activate.ps1
+
+# Navigate to app directory
+cd medchart_demo
+
+# Run the app
+streamlit run app.py

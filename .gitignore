@@ -23,25 +23,14 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Virtual Environments
+# Virtual Environment
 venv/
 env/
 ENV/
 env.bak/
 venv.bak/
-.venv/
 
-# Streamlit
-.streamlit/secrets.toml
-.streamlit/config.toml
-
-# Database Files
-*.db
-*.sqlite
-*.sqlite3
-medchart.db
-
-# IDE / Editor
+# IDEs
 .vscode/
 .idea/
 *.swp
@@ -58,33 +47,54 @@ medchart.db
 .env.local
 .env.*.local
 
+# Database
+*.db
+*.sqlite
+*.sqlite3
+medchart_demo/medchart.db
+
 # Logs
 *.log
 logs/
+*.log.*
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-
-# Documentation
-docs/_build/
-site/
-
-# OS Files
+# OS
 Thumbs.db
 .DS_Store
-desktop.ini
 
-# Temporary Files
+# Streamlit
+.streamlit/secrets.toml
+
+# API Keys (if any)
+*_api_key.txt
+secrets.json
+
+# Temporary files
 *.tmp
+*.temp
 *.bak
 *.swp
-*~
 
-# Project Specific
-# Uncomment if you want to ignore sample data
-# sample_data/
-# medchart_demo/sample_data/
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Project specific
+medchart_demo/__pycache__/
+*.pyc
