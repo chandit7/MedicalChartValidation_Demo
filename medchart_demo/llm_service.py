@@ -59,19 +59,28 @@ class LLMAnalytics:
         except Exception as e:
             return f"⚠️ Error: {str(e)}\n\nPlease check your API key and internet connection."
     
-    def analyze_trends(self, results_df):
+    def analyze_trends(self, results_df, days=30):
         """Analyze validation trends from historical data."""
+        if len(results_df) == 0:
+            return f"No validation results available for the last {days} days."
+        
+        decision_counts = results_df['decision'].fillna('').astype(str).str.lower().value_counts()
+        non_empty_flags = results_df['flags'].fillna('').astype(str)
+        non_empty_flags = non_empty_flags[non_empty_flags.str.strip() != '']
+        
         summary = {
             'total': len(results_df),
-            'approved': len(results_df[results_df['decision'] == 'APPROVED']),
-            'rejected': len(results_df[results_df['decision'] == 'REJECTED']),
-            'manual_review': len(results_df[results_df['decision'] == 'MANUAL_REVIEW']),
+            'approved': int(decision_counts.get('approved', 0)),
+            'rejected': int(decision_counts.get('rejected', 0)),
+            'manual_review': int(decision_counts.get('manual_review', 0)),
             'avg_confidence': results_df['confidence'].mean(),
-            'common_flags': results_df['flags'].value_counts().head(5).to_dict()
+            'common_flags': non_empty_flags.value_counts().head(5).to_dict()
         }
         
         prompt = f"""
-Analyze these medical chart validation results from the past 30 days:
+Analyze these medical chart validation results from the past {days} days.
+
+Use only the provided numbers. Do not assume data outside this date range. If a category count is 0, explicitly treat it as 0.
 
 **Summary Statistics:**
 - Total charts: {summary['total']}
@@ -80,14 +89,14 @@ Analyze these medical chart validation results from the past 30 days:
 - Manual Review: {summary['manual_review']} ({summary['manual_review']/summary['total']*100:.1f}%)
 - Average confidence: {summary['avg_confidence']:.2f}
 
-**Most Common Flags:**
+**Most Common Non-Empty Flags:**
 {json.dumps(summary['common_flags'], indent=2)}
 
 Provide:
 1. **Key Trends**: What patterns do you see?
 2. **Potential Issues**: Any concerning trends?
 3. **Recommendations**: 3 actionable improvements
-4. **Predictions**: What might happen next month?
+4. **Predictions**: What might happen next month based only on this period's data
 
 Format as markdown with clear sections.
 """

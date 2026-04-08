@@ -497,7 +497,7 @@ with tab4:
                     
                     # AI Insights
                     st.subheader("🤖 AI Insights")
-                    insights = llm.analyze_trends(results_df)
+                    insights = llm.analyze_trends(results_df, days=days)
                     st.markdown(insights)
                 else:
                     st.warning(f"⚠️ No data available for the last {days} days")
@@ -542,8 +542,21 @@ with tab4:
                         # Show flag distribution if available
                         if 'flags' in filtered.columns:
                             st.markdown("**Most Common Flags:**")
-                            flag_counts = filtered['flags'].value_counts().head(5)
-                            st.bar_chart(flag_counts)
+                            # Split pipe-separated flags and count individual flags
+                            all_flags = []
+                            for flag_str in filtered['flags'].dropna():
+                                if flag_str and str(flag_str).strip():
+                                    # Split by pipe and clean each flag
+                                    flags = [f.strip() for f in str(flag_str).split('|')]
+                                    all_flags.extend(flags)
+                            
+                            if all_flags:
+                                # Create DataFrame for proper type handling
+                                flag_df = pd.DataFrame({'flag': all_flags})
+                                flag_counts = flag_df['flag'].value_counts().head(5)
+                                st.bar_chart(flag_counts)
+                            else:
+                                st.info("No flags found in the selected cases")
                         
                         st.divider()
                         
