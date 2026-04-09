@@ -67,6 +67,9 @@ The Medical Chart Validation System is a deterministic, rule-based engine that v
 - **Backend**: Pure Python functions (no API layer)
 - **Database**: SQLite3 (built-in, file-based)
 - **Text Processing**: Regex (no NLP libraries)
+- **PDF Parsing**: pdfplumber + Groq LLM (intelligent extraction)
+- **AI Analytics**: Groq Llama 3.3 70B (free tier, optional)
+- **Data Protocol**: MCP (Model Context Protocol, optional)
 - **PDF Parsing**: pdfplumber (optional, demo uses .txt)
 
 ---
@@ -155,6 +158,551 @@ medchart_demo/
 
 **3. Repository Pattern**
 - Database abstraction in `db.py`
+
+### 2.4 Enhanced Architecture with Groq LLM and MCP
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                        Streamlit App (Enhanced)                      │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐   │
+│  │  Validate  │  │  Results   │  │ Dashboard  │  │AI Insights │   │
+│  │    Tab     │  │    Tab     │  │    Tab     │  │    Tab     │   │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘   │
+└──────────────────────────────────────────────────────────────────────┘
+         ↓                                                    ↓
+┌─────────────────────────┐                    ┌──────────────────────┐
+│   PDF Input Processing  │                    │   AI Analytics Layer │
+│  ┌──────────────────┐   │                    │  ┌────────────────┐  │
+│  │   pdfplumber     │   │                    │  │  Groq Llama    │  │
+│  │  (Text Extract)  │   │                    │  │  3.3 70B       │  │
+│  └────────┬─────────┘   │                    │  │  (Free Tier)   │  │
+│           ↓              │                    │  └────────────────┘  │
+│  ┌──────────────────┐   │                    │         ↕             │
+│  │  Groq Extractor  │   │                    │  ┌────────────────┐  │
+│  │  (LLM-powered)   │   │                    │  │  llm_service   │  │
+│  │  ✓ Smart parsing │   │                    │  │  - Trends      │  │
+│  │  ✓ Fallback to   │   │                    │  │  - NL Queries  │  │
+│  │    regex         │   │                    │  │  - Root Cause  │  │
+│  └──────────────────┘   │                    │  └────────────────┘  │
+└─────────────────────────┘                    └──────────────────────┘
+         ↓                                                    ↓
+┌──────────────────────────────────────────────────────────────────────┐
+│                      Agent Pipeline (Core)                           │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐        │
+│  │ Extract  │ → │ Gap Match│ → │Discrepancy│ → │ Decision │        │
+│  │  Agent   │   │  Agent   │   │  Agent    │   │  Agent   │        │
+│  └──────────┘   └──────────┘   └──────────┘   └──────────┘        │
+└──────────────────────────────────────────────────────────────────────┘
+         ↓                                                    ↓
+┌─────────────────────────┐                    ┌──────────────────────┐
+│   Database Layer        │                    │   MCP Protocol Layer │
+│  ┌──────────────────┐   │                    │  ┌────────────────┐  │
+│  │  SQLite DB       │   │                    │  │  MCP Server    │  │
+│  │  - results       │   │◄───────────────────┤  │  (Optional)    │  │
+│  │  - validation    │   │   Standardized     │  │  ✓ Resources   │  │
+│  │    history       │   │   Data Access      │  │  ✓ Tools       │  │
+│  └──────────────────┘   │                    │  │  ✓ Auditable   │  │
+└─────────────────────────┘                    │  └────────────────┘  │
+                                               └──────────────────────┘
+```
+
+### 2.5 Groq LLM Integration for PDF Extraction
+
+**Purpose:** Intelligent extraction from PDF medical charts with automatic fallback
+
+**Architecture:**
+```
+PDF File Input
+     ↓
+pdfplumber (Text Extraction)
+     ↓
+Raw Text
+     ↓
+┌─────────────────────────────────┐
+│   Groq PDF Extractor            │
+│   (groq_extractor.py)           │
+│                                 │
+│   Model: Llama 3.3 70B          │
+│   Temperature: 0.1 (precise)    │
+│   Max Tokens: 1200              │
+│                                 │
+│   ┌─────────────────────────┐   │
+│   │  Structured Prompt      │   │
+│   │  - Extract member_id    │   │
+│   │  - Extract visit_date   │   │
+│   │  - Extract NPI          │   │
+│   │  - Extract ICD codes    │   │
+│   │  - Extract lab values   │   │
+│   └─────────────────────────┘   │
+│            ↓                    │
+│   ┌─────────────────────────┐   │
+│   │  JSON Response          │   │
+│   │  Validation & Cleanup   │   │
+│   └─────────────────────────┘   │
+└─────────────────────────────────┘
+     ↓
+Structured Data
+     ↓
+┌─────────────────────────────────┐
+│   Fallback on Error             │
+│   → Regex Extraction            │
+│   → Ensures system reliability  │
+└─────────────────────────────────┘
+```
+
+**Key Features:**
+1. **Smart Extraction:** LLM understands context and variations in PDF format
+2. **Automatic Fallback:** Falls back to regex if LLM fails
+3. **Caching:** MD5-based caching prevents redundant API calls
+4. **Free Tier:** Groq provides 6000 requests/minute free
+5. **Fast:** 10x faster than typical LLM APIs
+
+**Implementation Details:**
+```python
+class GroqPDFExtractor:
+    def __init__(self, api_key, model="llama-3.3-70b-versatile"):
+        self.client = Groq(api_key=api_key)
+        self.model = model
+        self.cache = {}  # MD5-based response cache
+    
+    def extract_from_text(self, chart_text):
+        # Check cache first
+        cache_key = self._get_cache_key(chart_text)
+        if cache_key in self.cache:
+            return self.cache[cache_key]
+        
+        # Build structured prompt
+        prompt = self._build_extraction_prompt(chart_text)
+        
+        # Call Groq API
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[...],
+            temperature=0.1,  # Precise extraction
+            max_tokens=1200
+        )
+        
+        # Parse and validate JSON response
+        extracted_data = json.loads(response.content)
+        validated = self._validate_extraction(extracted_data)
+        
+        # Cache result
+        self.cache[cache_key] = validated
+        return validated
+```
+
+**Extraction Prompt Structure:**
+```
+Extract structured information from this medical chart text.
+Return ONLY valid JSON.
+
+Chart Text:
+{chart_text}
+
+Return JSON with exactly these keys:
+{
+  "member_id": string or null,
+  "visit_date": string (YYYY-MM-DD) or null,
+  "npi": string or null,
+  "icd_codes": array of strings,
+  "all_codes": array of strings,
+  "hba1c": number or null,
+  "lab_date": string (YYYY-MM-DD) or null
+}
+
+Rules:
+- Return only JSON
+- Use null for missing scalar fields
+- Use [] for missing arrays
+- Convert dates to YYYY-MM-DD
+- Include diagnosis codes in both icd_codes and all_codes
+- hba1c must be numeric only
+```
+
+**Fallback Strategy:**
+```python
+def run_extract_agent(text, file_type="txt", use_groq_for_pdf=True):
+    if file_type == "pdf" and use_groq_for_pdf:
+        try:
+            # Try Groq LLM extraction
+            extractor = GroqPDFExtractor(api_key=groq_api_key)
+            result = extractor.extract_from_text(text)
+            result["_extraction_meta"] = {
+                "method_used": "groq_pdf",
+                "llm_status": "passed"
+            }
+            return result
+        except Exception as e:
+            # Fallback to regex
+            result = _regex_extract_fallback(text)
+            result["_extraction_meta"] = {
+                "method_used": "regex_fallback",
+                "llm_status": "failed",
+                "llm_error": str(e)
+            }
+            return result
+    else:
+        # Use regex for TXT files
+        return _regex_extract_fallback(text)
+```
+
+### 2.6 MCP (Model Context Protocol) Integration
+
+**Purpose:** Standardized protocol for AI to access validation data
+
+**Architecture:**
+```
+┌──────────────────────────────────────────────────────────┐
+│                    MCP Server                            │
+│                  (mcp_server.py)                         │
+│                                                          │
+│  ┌────────────────────────────────────────────────┐     │
+│  │              Resources (Read-Only)             │     │
+│  │                                                │     │
+│  │  1. medchart://results/all                    │     │
+│  │     → All validation results                  │     │
+│  │                                                │     │
+│  │  2. medchart://results/summary                │     │
+│  │     → Aggregate metrics                       │     │
+│  │                                                │     │
+│  │  3. medchart://results/recent?days=30         │     │
+│  │     → Recent results with date filter         │     │
+│  │                                                │     │
+│  └────────────────────────────────────────────────┘     │
+│                                                          │
+│  ┌────────────────────────────────────────────────┐     │
+│  │              Tools (Dynamic Queries)           │     │
+│  │                                                │     │
+│  │  1. filter_by_decision(decision: str)         │     │
+│  │     → Filter results by approval status       │     │
+│  │                                                │     │
+│  │  2. filter_by_member(member_id: str)          │     │
+│  │     → Get all results for a member            │     │
+│  │                                                │     │
+│  │  3. get_trend_data(days: int)                 │     │
+│  │     → Time-series data for analysis           │     │
+│  │                                                │     │
+│  │  4. get_daily_metrics()                       │     │
+│  │     → Last 24 hours summary                   │     │
+│  │                                                │     │
+│  └────────────────────────────────────────────────┘     │
+└──────────────────────────────────────────────────────────┘
+                         ↕
+┌──────────────────────────────────────────────────────────┐
+│              LLM Service with MCP Client                 │
+│              (llm_service_mcp.py)                        │
+│                                                          │
+│  ┌────────────────────────────────────────────────┐     │
+│  │         MCP Client Session                     │     │
+│  │  - Connects to MCP server                      │     │
+│  │  - Reads resources via URIs                    │     │
+│  │  - Calls tools with parameters                 │     │
+│  │  - Automatic fallback to direct DB access      │     │
+│  └────────────────────────────────────────────────┘     │
+│                         ↓                                │
+│  ┌────────────────────────────────────────────────┐     │
+│  │         AI Analytics Functions                 │     │
+│  │  - analyze_trends_mcp(days)                    │     │
+│  │  - natural_language_query(question, df)        │     │
+│  │  - root_cause_analysis(filtered_df)            │     │
+│  │  - explain_decision(result)                    │     │
+│  └────────────────────────────────────────────────┘     │
+└──────────────────────────────────────────────────────────┘
+                         ↓
+┌──────────────────────────────────────────────────────────┐
+│                   Groq Llama 3.3 70B                     │
+│                   (Free Tier API)                        │
+│  - 6000 requests/minute                                  │
+│  - No credit card required                               │
+│  - 10x faster than typical APIs                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+**MCP Benefits:**
+
+1. **Standardization:**
+   - Consistent data access pattern
+   - Well-defined resource URIs
+   - Typed tool parameters
+
+2. **Security:**
+   - Read-only resources
+   - Auditable access logs
+   - No direct database manipulation
+
+3. **Extensibility:**
+   - Easy to add new resources
+   - Simple tool registration
+   - Can connect to multiple data sources
+
+4. **AI-Friendly:**
+   - LLMs understand MCP protocol
+   - Self-documenting resources
+   - Clear tool descriptions
+
+**MCP Resource Examples:**
+
+```python
+# Resource 1: All Results
+@server.list_resources()
+async def list_resources():
+    return [
+        Resource(
+            uri="medchart://results/all",
+            name="All Validation Results",
+            description="Complete history of chart validations",
+            mimeType="application/json"
+        )
+    ]
+
+# Resource 2: Summary
+@server.read_resource()
+async def read_resource(uri: str):
+    if uri == "medchart://results/summary":
+        summary = db.get_summary()
+        return json.dumps(summary, indent=2)
+```
+
+**MCP Tool Examples:**
+
+```python
+# Tool 1: Filter by Decision
+@server.list_tools()
+async def list_tools():
+    return [
+        Tool(
+            name="filter_by_decision",
+            description="Filter validation results by decision type",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "decision": {
+                        "type": "string",
+                        "enum": ["approved", "rejected", "manual_review"],
+                        "description": "Decision type to filter by"
+                    }
+                },
+                "required": ["decision"]
+            }
+        )
+    ]
+
+# Tool 2: Get Trend Data
+@server.call_tool()
+async def call_tool(name: str, arguments: dict):
+    if name == "get_trend_data":
+        days = arguments.get("days", 30)
+        results = db.get_results_for_analysis(days=days)
+        return json.dumps(results, indent=2)
+```
+
+**MCP Client Usage in LLM Service:**
+
+```python
+class LLMAnalyticsMCP(LLMAnalytics):
+    def __init__(self, use_mcp=True):
+        super().__init__()
+        self.use_mcp = use_mcp
+        self.mcp_available = False
+        
+        if use_mcp:
+            try:
+                # Initialize MCP client
+                self.mcp_client = self._init_mcp_client()
+                self.mcp_available = True
+            except Exception as e:
+                # Fallback to direct access
+                self.mcp_available = False
+    
+    async def analyze_trends_mcp(self, days=30):
+        """Analyze trends using MCP protocol"""
+        if self.mcp_available:
+            # Read data via MCP
+            async with self.mcp_client:
+                # Read recent results resource
+                uri = f"medchart://results/recent?days={days}"
+                response = await self.mcp_client.read_resource(uri)
+                data = json.loads(response.content)
+                
+                # Generate insights with Groq
+                insights = self.generate(
+                    prompt=self._build_trend_prompt(data),
+                    max_tokens=800
+                )
+                return insights
+        else:
+            # Fallback to direct database access
+            return self.analyze_trends(
+                db.get_results_for_analysis(days=days),
+                days=days
+            )
+```
+
+**MCP vs Direct Access Comparison:**
+
+| Aspect | MCP Protocol | Direct Database |
+|--------|-------------|-----------------|
+| **Data Access** | Via standardized URIs | Direct SQL queries |
+| **Security** | Read-only resources | Full database access |
+| **Auditability** | All access logged | Limited logging |
+| **Extensibility** | Easy to add sources | Requires code changes |
+| **Performance** | Slight overhead | Direct, fastest |
+| **AI Integration** | Native LLM support | Manual integration |
+| **Complexity** | Requires MCP server | Simple, direct |
+| **Use Case** | Production, multi-source | Development, single DB |
+
+**When to Use MCP:**
+- ✅ Production environments
+- ✅ Multiple data sources
+- ✅ Need audit trails
+- ✅ AI-first architecture
+- ✅ Team collaboration
+
+**When to Use Direct Access:**
+- ✅ Development/testing
+- ✅ Single database
+- ✅ Maximum performance
+- ✅ Simple deployments
+- ✅ Quick prototypes
+
+### 2.7 AI Analytics Layer Architecture
+
+**Purpose:** Provide intelligent insights without affecting core validation
+
+**Key Principle:** AI analytics are **completely separate** from validation decisions
+
+```
+┌──────────────────────────────────────────────────────────┐
+│              Core Validation Pipeline                    │
+│         (100% Deterministic, No AI)                      │
+│                                                          │
+│  Extract → Gap Match → Discrepancy → Decision           │
+│                                                          │
+│  ✓ Rule-based                                           │
+│  ✓ Reproducible                                         │
+│  ✓ Auditable                                            │
+│  ✓ No LLM involvement                                   │
+└──────────────────────────────────────────────────────────┘
+                         ↓
+                   [Saves to DB]
+                         ↓
+┌──────────────────────────────────────────────────────────┐
+│              AI Analytics Layer                          │
+│         (Optional, Post-Processing Only)                 │
+│                                                          │
+│  ┌────────────────────────────────────────────────┐     │
+│  │  Trend Analysis                                │     │
+│  │  - Identify patterns in validation history    │     │
+│  │  - Predict future trends                      │     │
+│  │  - Recommend improvements                     │     │
+│  └────────────────────────────────────────────────┘     │
+│                                                          │
+│  ┌────────────────────────────────────────────────┐     │
+│  │  Natural Language Queries                      │     │
+│  │  - "What's the rejection rate this week?"     │     │
+│  │  - "Which member has most manual reviews?"    │     │
+│  │  - "Show me approval trends"                  │     │
+│  └────────────────────────────────────────────────┘     │
+│                                                          │
+│  ┌────────────────────────────────────────────────┐     │
+│  │  Root Cause Analysis                           │     │
+│  │  - Why are charts being rejected?             │     │
+│  │  - Common flag patterns                       │     │
+│  │  - Data quality issues                        │     │
+│  └────────────────────────────────────────────────┘     │
+│                                                          │
+│  ┌────────────────────────────────────────────────┐     │
+│  │  Decision Explanations                         │     │
+│  │  - Human-friendly explanations                │     │
+│  │  - Clinical perspective                       │     │
+│  │  - Compliance perspective                     │     │
+│  └────────────────────────────────────────────────┘     │
+└──────────────────────────────────────────────────────────┘
+```
+
+**AI Analytics Features:**
+
+1. **Trend Analysis:**
+   ```python
+   def analyze_trends(self, results_df, days=30):
+       """Analyze validation trends over time"""
+       summary = {
+           'total': len(results_df),
+           'approved': decision_counts.get('approved', 0),
+           'rejected': decision_counts.get('rejected', 0),
+           'manual_review': decision_counts.get('manual_review', 0),
+           'avg_confidence': results_df['confidence'].mean(),
+           'common_flags': results_df['flags'].value_counts().head(5)
+       }
+       
+       prompt = f"""
+       Analyze these medical chart validation results:
+       {json.dumps(summary, indent=2)}
+       
+       Provide:
+       1. Key Trends
+       2. Potential Issues
+       3. Recommendations
+       4. Predictions
+       """
+       
+       return self.generate(prompt, max_tokens=800)
+   ```
+
+2. **Natural Language Queries:**
+   ```python
+   def natural_language_query(self, question, results_df):
+       """Answer questions about validation data"""
+       stats = {
+           'total': len(results_df),
+           'decisions': results_df['decision'].value_counts().to_dict(),
+           'avg_confidence': results_df['confidence'].mean()
+       }
+       
+       prompt = f"""
+       Question: {question}
+       
+       Available Data:
+       {json.dumps(stats, indent=2)}
+       
+       Provide a clear, concise answer with specific numbers.
+       """
+       
+       return self.generate(prompt, max_tokens=400)
+   ```
+
+3. **Root Cause Analysis:**
+   ```python
+   def root_cause_analysis(self, filtered_results):
+       """Identify root causes for patterns"""
+       summary = {
+           'count': len(filtered_results),
+           'common_flags': filtered_results['flags'].value_counts().head(5),
+           'avg_confidence': filtered_results['confidence'].mean()
+       }
+       
+       prompt = f"""
+       Perform root cause analysis on these flagged charts:
+       {json.dumps(summary, indent=2)}
+       
+       Identify:
+       1. Root Causes
+       2. Preventable Issues
+       3. Data Quality Problems
+       4. Training Needs
+       """
+       
+       return self.generate(prompt, max_tokens=700)
+   ```
+
+**AI Analytics Guarantees:**
+
+✅ **Never modifies validation decisions**
+✅ **Operates only on historical data**
+✅ **Can be disabled without affecting core system**
+✅ **Provides insights, not decisions**
+✅ **Fully optional feature**
+
 - Clean separation of data access
 - Easy to swap SQLite for PostgreSQL
 

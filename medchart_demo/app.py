@@ -8,6 +8,14 @@ import db
 import agents
 from llm_service import LLMAnalytics
 
+# Try to import MCP version, but don't fail if not available
+try:
+    from llm_service_mcp import LLMAnalyticsMCP
+    MCP_AVAILABLE = True
+except ImportError:
+    MCP_AVAILABLE = False
+    LLMAnalyticsMCP = None
+
 # Load environment variables
 load_dotenv()
 
@@ -22,7 +30,31 @@ st.set_page_config(
 )
 
 st.title("🏥 Medical Chart Validation System")
-st.caption("Zero-LLM algorithmic decision engine for care gap closure")
+st.caption("Agentic workflow for care gap closure")
+
+# MCP Settings in Sidebar
+with st.sidebar:
+    st.divider()
+    st.subheader("🔧 MCP Settings")
+    
+    if MCP_AVAILABLE:
+        use_mcp = st.checkbox(
+            "Enable MCP Protocol",
+            value=False,
+            help="Use Model Context Protocol for standardized data access. Toggle to compare MCP vs direct access."
+        )
+        
+        if use_mcp:
+            st.success("✅ MCP Enabled")
+            st.caption("Data accessed via standardized protocol")
+        else:
+            st.info("ℹ️ MCP Disabled")
+            st.caption("Using direct database access")
+    else:
+        use_mcp = False
+        st.warning("⚠️ MCP Not Available")
+        st.caption("Install MCP package to enable: `pip install mcp`")
+        st.caption("App works normally without MCP")
 
 # Create tabs
 tab1, tab2, tab3, tab4 = st.tabs(["📋 Validate", "📊 Results", "📈 Dashboard", "🤖 AI Insights"])
@@ -47,6 +79,9 @@ with tab1:
         
         chart_text = None
         filename = None
+        file_type = "txt"
+        use_groq_for_pdf = True
+        groq_api_key = os.getenv("GROQ_API_KEY", "")
         
         if upload_method == "Upload file":
             uploaded_file = st.file_uploader(
@@ -61,17 +96,25 @@ with tab1:
                     st.error("❌ File too large. Maximum size is 5MB.")
                 else:
                     filename = uploaded_file.name
+                    file_type = "pdf" if uploaded_file.name.endswith(".pdf") else "txt"
                     
-                    if uploaded_file.name.endswith(".pdf"):
+                    if file_type == "pdf":
                         try:
                             with pdfplumber.open(uploaded_file) as pdf:
-                                chart_text = "\n".join([page.extract_text() for page in pdf.pages])
+                                chart_text = "\n".join([(page.extract_text() or "") for page in pdf.pages])
                             st.success(f"✅ PDF loaded: {len(chart_text)} characters")
+                            st.info("PDF selected: Groq AI extraction can be used with regex fallback.")
+                            use_groq_for_pdf = st.checkbox(
+                                "Use Groq AI extraction for this PDF",
+                                value=True,
+                                help="If Groq fails, the app will fall back to regex extraction."
+                            )
                         except Exception as e:
                             st.error(f"❌ PDF extraction failed: {str(e)}")
                     else:
                         chart_text = uploaded_file.read().decode("utf-8")
                         st.success(f"✅ Text file loaded: {len(chart_text)} characters")
+                        st.info("TXT selected: rule-based regex extraction will be used.")
         
         else:  # Use sample data
             sample_options = [
@@ -87,7 +130,9 @@ with tab1:
             if sample_path.exists():
                 chart_text = sample_path.read_text()
                 filename = selected_sample
+                file_type = "txt"
                 st.success(f"✅ Sample loaded: {selected_sample}")
+                st.info("Sample TXT data uses rule-based regex extraction.")
             else:
                 st.error(f"❌ Sample file not found: {sample_path}")
     
@@ -129,7 +174,32 @@ with tab1:
             # Agent 1: Extract
             with st.status("🔍 Extract Agent", expanded=True) as status1:
                 try:
-                    extracted = agents.run_extract_agent(chart_text)
+                    extracted = agents.run_extract_agent(
+                        chart_text,
+                        file_type=file_type,
+                        use_groq_for_pdf=use_groq_for_pdf,
+                        api_key=groq_api_key or None
+                    )
+                    extraction_meta = extracted.get("_extraction_meta", {})
+                    llm_status = extraction_meta.get("llm_status")
+                    method_used = extraction_meta.get("method_used", "unknown")
+
+                    if llm_status == "passed":
+                        st.success("✅ LLM extraction: PASSED")
+                        st.caption(f"Method used: {method_used}")
+                    elif llm_status == "failed":
+                        st.warning("⚠️ LLM extraction: FAILED")
+                        st.caption(f"Method used: {method_used}")
+                        st.caption("Fallback used: Regex extraction")
+                        if extraction_meta.get("llm_error"):
+                            st.caption(f"LLM error: {extraction_meta['llm_error']}")
+                    elif llm_status == "skipped":
+                        st.info("ℹ️ LLM extraction: SKIPPED")
+                        st.caption(f"Method used: {method_used}")
+                    else:
+                        st.info("ℹ️ LLM extraction: NOT APPLICABLE")
+                        st.caption(f"Method used: {method_used}")
+
                     st.json(extracted)
                     status1.update(label="✅ Extract Agent", state="complete")
                 except Exception as e:
@@ -343,19 +413,6 @@ with tab3:
     
     st.divider()
     
-    # Add AI-powered alerts section
-    if 'llm_service' in st.session_state:
-        st.subheader("🚨 AI-Detected Alerts")
-        st.caption("Automated anomaly detection powered by Groq (Llama 3.1)")
-        
-        if st.button("🔄 Refresh Alerts"):
-            with st.spinner("Analyzing for anomalies..."):
-                current = db.get_daily_summary()
-                historical = db.get_30day_average()
-                alerts_text = st.session_state.llm_service.generate_alerts(current, historical)
-                st.markdown(alerts_text)
-        
-        st.divider()
     
     # Get all results for charting
     results = db.get_all_results()
@@ -388,12 +445,25 @@ with tab4:
     st.header("🤖 AI-Powered Analytics")
     st.caption("Powered by Groq's free tier (Llama 3.3) - Does not affect validation decisions")
     
-    # Initialize LLM service from environment variable
+    # Initialize LLM service - supports both MCP and direct access
     try:
-        if 'llm_service' not in st.session_state:
-            st.session_state.llm_service = LLMAnalytics()
+        if 'llm_service' not in st.session_state or st.session_state.get('use_mcp') != use_mcp:
+            # Choose service based on MCP toggle and availability
+            if use_mcp and MCP_AVAILABLE:
+                st.session_state.llm_service = LLMAnalyticsMCP(use_mcp=True)
+                st.session_state.use_mcp = True
+            else:
+                st.session_state.llm_service = LLMAnalytics()
+                st.session_state.use_mcp = False
+        
         llm = st.session_state.llm_service
-        st.success("✅ Connected to Groq (Llama 3.3 70B)")
+        
+        # Show connection status with MCP indicator
+        if use_mcp and MCP_AVAILABLE:
+            mcp_status = "🔗 MCP" if hasattr(llm, 'mcp_available') and llm.mcp_available else "⚠️ MCP (fallback)"
+            st.success(f"✅ Connected to Groq (Llama 3.3 70B) via {mcp_status}")
+        else:
+            st.success("✅ Connected to Groq (Llama 3.3 70B) - Direct Access")
     except Exception as e:
         st.error(f"❌ Failed to connect to Groq: {str(e)}")
         st.info("""
@@ -414,7 +484,6 @@ with tab4:
         - **📈 Trend Analysis**: Identify patterns in validation history
         - **💬 Natural Language Queries**: Ask questions in plain English
         - **🔍 Root Cause Analysis**: Understand why cases are rejected/flagged
-        - **🚨 Automated Alerts**: Proactive notifications about anomalies
         
         ### 🎁 Why Groq?
         - ✅ **100% FREE** - No credit card required
@@ -440,11 +509,23 @@ with tab4:
         
         if question:
             with st.spinner("🤔 Thinking..."):
+                # Show data access method
+                if use_mcp:
+                    st.caption("📊 Fetching data via MCP protocol...")
+                else:
+                    st.caption("📊 Fetching data via direct access...")
+                
                 results_df = db.get_all_results()
                 if len(results_df) > 0:
                     results_df = pd.DataFrame(results_df)
                     answer = llm.natural_language_query(question, results_df)
                     st.info(answer)
+                    
+                    # Show access method used
+                    if use_mcp:
+                        st.success("✅ Data accessed via MCP (standardized protocol)")
+                    else:
+                        st.info("ℹ️ Data accessed directly from database")
                 else:
                     st.warning("⚠️ No validation data available yet. Run some validations first!")
         
@@ -472,35 +553,70 @@ with tab4:
         
         if analyze_btn:
             with st.spinner("📊 Analyzing validation patterns..."):
-                results_df = db.get_results_for_analysis(days=days)
-                
-                if len(results_df) > 0:
-                    # Show charts first
-                    st.subheader("📊 Visual Trends")
+                # Use MCP-specific method if enabled and available
+                if use_mcp and MCP_AVAILABLE and hasattr(llm, 'analyze_trends_mcp'):
+                    st.caption("🔗 Using MCP protocol for data access...")
+                    insights = llm.analyze_trends_mcp(days=days)
+                    st.success("✅ Analysis complete via MCP")
                     
-                    # Decision distribution over time
-                    df_chart = results_df.copy()
-                    df_chart['date'] = pd.to_datetime(df_chart['created_at']).dt.date
-                    
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        st.markdown("**Decision Distribution**")
-                        decision_counts = df_chart['decision'].value_counts()
-                        st.bar_chart(decision_counts)
-                    
-                    with col2:
-                        st.markdown("**Confidence Score Distribution**")
-                        st.line_chart(df_chart.set_index('date')['confidence'])
-                    
-                    st.divider()
-                    
-                    # AI Insights
+                    # Show insights
                     st.subheader("🤖 AI Insights")
-                    insights = llm.analyze_trends(results_df, days=days)
                     st.markdown(insights)
+                    
+                    # Show data access details
+                    with st.expander("🔍 Data Access Details"):
+                        st.markdown("""
+                        **MCP Protocol Used:**
+                        - ✅ Standardized data access
+                        - ✅ Secure resource URIs
+                        - ✅ Auditable requests
+                        - ✅ Easy to extend to other data sources
+                        
+                        **Resource accessed:** `medchart://results/recent`
+                        """)
                 else:
-                    st.warning(f"⚠️ No data available for the last {days} days")
+                    st.caption("📊 Using direct database access...")
+                    results_df = db.get_results_for_analysis(days=days)
+                    
+                    if len(results_df) > 0:
+                        # Show charts first
+                        st.subheader("📊 Visual Trends")
+                        
+                        # Decision distribution over time
+                        df_chart = results_df.copy()
+                        df_chart['date'] = pd.to_datetime(df_chart['created_at']).dt.date
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.markdown("**Decision Distribution**")
+                            decision_counts = df_chart['decision'].value_counts()
+                            st.bar_chart(decision_counts)
+                        
+                        with col2:
+                            st.markdown("**Confidence Score Distribution**")
+                            st.line_chart(df_chart.set_index('date')['confidence'])
+                        
+                        st.divider()
+                        
+                        # AI Insights
+                        st.subheader("🤖 AI Insights")
+                        insights = llm.analyze_trends(results_df, days=days)
+                        st.markdown(insights)
+                        st.info("ℹ️ Analysis complete via direct access")
+                        
+                        # Show data access details
+                        with st.expander("🔍 Data Access Details"):
+                            st.markdown("""
+                            **Direct Database Access:**
+                            - ℹ️ Traditional SQL queries
+                            - ℹ️ Direct connection to SQLite
+                            - ℹ️ No protocol overhead
+                            
+                            **Function called:** `db.get_results_for_analysis()`
+                            """)
+                    else:
+                        st.warning(f"⚠️ No data available for the last {days} days")
     
     # Sub-tab 3: Root Cause Analysis
     with ai_tab3:
@@ -539,15 +655,22 @@ with tab4:
                         # Show summary stats
                         st.metric("Cases Found", len(filtered))
                         
+                        # Show data access method
+                        if use_mcp:
+                            st.caption("🔗 Data filtered via MCP protocol")
+                        else:
+                            st.caption("📊 Data filtered via direct access")
+                        
                         # Show flag distribution if available
                         if 'flags' in filtered.columns:
                             st.markdown("**Most Common Flags:**")
                             # Split pipe-separated flags and count individual flags
                             all_flags = []
-                            for flag_str in filtered['flags'].dropna():
-                                if flag_str and str(flag_str).strip():
+                            flag_values = filtered['flags'].tolist()
+                            for flag_str in flag_values:
+                                if pd.notna(flag_str) and str(flag_str).strip():
                                     # Split by pipe and clean each flag
-                                    flags = [f.strip() for f in str(flag_str).split('|')]
+                                    flags = [f.strip() for f in str(flag_str).split('|') if f.strip()]
                                     all_flags.extend(flags)
                             
                             if all_flags:
@@ -564,6 +687,19 @@ with tab4:
                         st.subheader("🤖 AI Root Cause Analysis")
                         analysis = llm.root_cause_analysis(filtered)
                         st.markdown(analysis)
+                        
+                        # Show access summary
+                        with st.expander("📊 Access Summary"):
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.metric("Records Analyzed", len(filtered))
+                                st.metric("Data Source", "MCP" if use_mcp else "Direct")
+                            with col2:
+                                st.metric("Analysis Type", analysis_type)
+                                if use_mcp:
+                                    st.caption("✅ Standardized protocol")
+                                else:
+                                    st.caption("ℹ️ Direct database")
                     else:
                         st.warning(f"⚠️ No {filter_desc} found in the database")
                 else:

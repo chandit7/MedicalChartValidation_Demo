@@ -98,3 +98,14 @@ dmypy.json
 # Project specific
 medchart_demo/__pycache__/
 *.pyc
+
+# Docker
+data/
+.env.prod
+nginx/ssl/*.pem
+nginx/ssl/*.key
+docker-compose.override.yml
+
+# Docker volumes and build cache
+.docker/
+*.dockerignore.bak

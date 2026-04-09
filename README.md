@@ -30,12 +30,40 @@ User → Streamlit UI → 4 Agents → Decision → Database → Dashboard
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### 🐳 Option 1: Docker (Recommended)
+
+**Fastest way to get started - no Python setup required!**
+
+```bash
+# 1. Copy environment file
+cp .env.example .env
+
+# 2. Create data directory
+mkdir data
+
+# 3. Start with Docker Compose
+docker compose up -d
+
+# 4. Open browser
+# http://localhost:8501
+```
+
+✅ **Done!** See [DOCKER_QUICK_START.md](MedicalChartAgentFlow/docker/DOCKER_QUICK_START.md) for details.
+
+📚 **Full Docker Guide**: [DOCKER_SETUP.md](MedicalChartAgentFlow/docker/DOCKER_SETUP.md)
+
+---
+
+### 🐍 Option 2: Local Python Installation
+
+**Traditional setup for development:**
+
+#### Prerequisites
 
 - Python 3.8+ (tested with 3.11, 3.12)
 - pip package manager
 
-### Installation
+#### Installation
 
 ```bash
 # Clone the repository

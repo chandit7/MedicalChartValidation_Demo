@@ -4,3 +4,4 @@ pandas>=2.0.0
 groq>=0.4.0  # Free tier LLM for analytics (Llama 3.1)
 google-genai>=0.1.0  # New Gemini SDK (replaces deprecated google-generativeai)
 python-dotenv>=1.0.0
+mcp>=1.0.0  # Model Context Protocol SDK

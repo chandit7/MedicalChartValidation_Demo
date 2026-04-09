@@ -6,3 +6,7 @@ cd medchart_demo
 
 # Run the app
 streamlit run app.py
+
+C:\Ramesh_Learning\Agentic_AI_Demo_Challenge
+cd medchart_demo
+..\venv\Scripts\python.exe -m streamlit run app.py

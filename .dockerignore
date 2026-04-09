@@ -1,0 +1,89 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+GIT_SETUP_GUIDE.md
+gitignore_plan.md
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Environment files (will be passed via docker-compose)
+.env
+.env.*
+!.env.example
+
+# Database files (will be in volume)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation (not needed in container)
+MedicalChartAgentFlow/
+*.md
+!medchart_demo/*.md
+
+# Sample data directory structure (will be mounted)
+sample_data/
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs
+*.log
+logs/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Docker files (not needed inside container)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Jupyter notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Data directory (will be mounted as volume)
+data/

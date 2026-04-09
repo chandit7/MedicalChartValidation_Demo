@@ -1,23 +1,89 @@
+import os
 import re
 from datetime import date
+
+try:
+    from groq_extractor import GroqPDFExtractor
+except ImportError:
+    GroqPDFExtractor = None
 
 # Known ICD-10 codes for validation
 KNOWN_ICD = {"Z00.00", "Z12.31", "E11.9", "Z23", "Z79.4", "Z13.1", "E11.65"}
 
-def run_extract_agent(text: str) -> dict:
+def run_extract_agent(text: str, file_type: str = "txt", use_groq_for_pdf: bool = True, api_key: str | None = None) -> dict:
+    """Extract structured data from chart text with PDF-only Groq support."""
+    normalized_file_type = (file_type or "txt").lower()
+    requested_method = "groq_pdf" if normalized_file_type == "pdf" and use_groq_for_pdf else "regex"
+
+    if normalized_file_type == "pdf" and use_groq_for_pdf and GroqPDFExtractor:
+        groq_api_key = api_key or os.getenv("GROQ_API_KEY")
+        if groq_api_key:
+            try:
+                extractor = GroqPDFExtractor(api_key=groq_api_key)
+                result = extractor.extract_from_text(text)
+                result["icd_codes"] = [c for c in result.get("icd_codes", []) if c in KNOWN_ICD]
+                result["all_codes"] = result.get("all_codes", []) or result.get("icd_codes", [])
+                result["raw_text"] = text
+                result["_extraction_meta"] = {
+                    "file_type": "pdf",
+                    "method_requested": requested_method,
+                    "method_used": "groq_pdf",
+                    "llm_attempted": True,
+                    "llm_status": "passed",
+                    "fallback_used": False,
+                    "llm_error": None,
+                }
+                return result
+            except Exception as e:
+                fallback_result = _regex_extract_fallback(text)
+                fallback_result["_extraction_meta"] = {
+                    "file_type": "pdf",
+                    "method_requested": requested_method,
+                    "method_used": "regex_fallback",
+                    "llm_attempted": True,
+                    "llm_status": "failed",
+                    "fallback_used": True,
+                    "llm_error": str(e),
+                }
+                return fallback_result
+
+        skipped_result = _regex_extract_fallback(text)
+        skipped_result["_extraction_meta"] = {
+            "file_type": "pdf",
+            "method_requested": requested_method,
+            "method_used": "regex_pdf",
+            "llm_attempted": False,
+            "llm_status": "skipped",
+            "fallback_used": False,
+            "llm_error": None,
+        }
+        return skipped_result
+
+    regex_result = _regex_extract_fallback(text)
+    regex_result["_extraction_meta"] = {
+        "file_type": normalized_file_type,
+        "method_requested": "regex",
+        "method_used": "regex",
+        "llm_attempted": False,
+        "llm_status": "not_applicable",
+        "fallback_used": False,
+        "llm_error": None,
+    }
+    return regex_result
+
+def _regex_extract_fallback(text: str) -> dict:
     """Extract structured data from chart text using regex."""
     member_id = re.search(r"Member ID:\s*(\S+)", text)
     visit_date = re.search(r"Visit Date:\s*([\d-]+)", text)
     npi = re.search(r"Provider NPI:\s*(\d+)", text)
     icd_line = re.search(r"Diagnosis Codes:\s*(.+)", text)
-    
-    # Extract all codes and validate against known set
+
     raw_codes = [c.strip() for c in icd_line.group(1).split(",")] if icd_line else []
     valid_codes = [c for c in raw_codes if c in KNOWN_ICD]
-    
-    # Extract HbA1c value
+
     hba1c = re.search(r"HbA1c:\s*([\d.]+)", text)
-    
+    lab_date = re.search(r"HbA1c:.*?on\s*([\d-]+)", text)
+
     return {
         "member_id": member_id.group(1) if member_id else None,
         "visit_date": visit_date.group(1) if visit_date else None,
@@ -25,6 +91,7 @@ def run_extract_agent(text: str) -> dict:
         "icd_codes": valid_codes,
         "all_codes": raw_codes,
         "hba1c": float(hba1c.group(1)) if hba1c else None,
+        "lab_date": lab_date.group(1) if lab_date else None,
         "raw_text": text
     }
 
