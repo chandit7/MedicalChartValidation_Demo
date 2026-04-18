@@ -41,7 +41,7 @@ class LLMAnalyticsMCP:
             # Note: In production, this would connect to actual MCP server
             print("✅ MCP client initialized (ready to connect to server)")
         except Exception as e:
-            print(f"⚠️ MCP initialization failed: {e}")
+            print(f"⚠️ MCP clientinitialization failed: {e}")
             self.mcp_available = False
     
     async def _get_data_via_mcp(self, resource_uri: str):
