@@ -1,8 +1,6 @@
 # Medical Chart Validation System - Docker Compose Configuration
 # Development and testing environment
 
-version: '3.8'
-
 services:
   # Main Streamlit Application
   medchart-app:
@@ -62,11 +60,5 @@ services:
 networks:
   medchart-network:
     driver: bridge
-
-volumes:
-  # Named volume for database (alternative to bind mount)
-  # Uncomment to use named volume instead of ./data
-  # medchart-data:
-  #   driver: local
 
 # Made with Bob

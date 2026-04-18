@@ -38,9 +38,7 @@ class LLMAnalyticsMCP:
     def _init_mcp(self):
         """Initialize MCP client connection."""
         try:
-            # Note: In production, this would connect to the running MCP server
-            # For now, we'll use a flag to indicate MCP is available
-            self.mcp_available = True
+            # Note: In production, this would connect to actual MCP server
             print("✅ MCP client initialized (ready to connect to server)")
         except Exception as e:
             print(f"⚠️ MCP initialization failed: {e}")
